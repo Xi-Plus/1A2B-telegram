@@ -53,7 +53,7 @@ if ($method == 'POST') {
 						"ans"=>randomans($guesslen),
 						"len"=>$guesslen
 					);
-					$response.="已開始 ".$data["len"]." 個數字的遊戲，欲重玩請在輸入框左方選單選擇\n";
+					$response.="已開始 ".$data["len"]." 個數字的遊戲，欲重玩請輸入 /start\n";
 				}
 				$data["count"]++;
 				$stat=checkans($data["ans"], $guessarr, $data["len"]);
