@@ -27,4 +27,15 @@ function checkans($ans, $gue, $len) {
 	}
 	return array($A,$B);
 }
-?>
+function generateresult($guess, $result, $column) {
+	$text = "";
+	foreach ($guess as $key => $value) {
+		if ($key % $column == 0) {
+			$text .= "\n";
+		} else {
+			$text .= " | ";
+		}
+		$text .= $guess[$key]." ".$result[$key];
+	}
+	return $text;
+}

@@ -12,99 +12,126 @@ if ($method == 'POST') {
 	if (!$data) {
 		$data=array(
 			"count"=>0,
-			"text"=>"",
-			"start"=>($user_id > 0)
+			"text"=>[],
+			"start"=>($user_id > 0),
+			"column"=>$cfg['defalut_column'],
+			"message_id"=>""
 		);
 	} else {
 		$data = json_decode($data, true);
 	}
 	if (isset($input['message']['text'])) {
-		$text = $input['message']['text'];
-		if (($user_id > 0 && $text === "/start") || $text == '/start@oneAtwoB_bot') {
+		$input = $input['message']['text'];
+		$delmsg = false;
+		if (($user_id > 0 && $input === "/start") || $input == '/start@oneAtwoB_bot') {
 			if ($data["count"]==0) {
 				$response = "已開始新遊戲！將根據輸入決定答案數字個數";
 			} else {
 				$response = "你猜了 ".$data["count"]." 次就放棄了，答案是".implode($data["ans"])."\n".$data["text"]."\n\n已開始新遊戲！將根據輸入決定答案數字個數";
 			}
-			$data=array(
-				"count"=>0,
-				"text"=>"",
-				"start"=>true
-			);
-		} else if ($user_id < 0 && $text == '/stop@oneAtwoB_bot') {
-			$data=array(
-				"count"=>0,
-				"text"=>"",
-				"start"=>false
-			);
+			$data["count"] = 0;
+			$data["text"] = [];
+			$data["start"] = true;
+		} else if ($user_id < 0 && $input == '/stop@oneAtwoB_bot') {
+			$data["count"] = 0;
+			$data["text"] = [];
+			$data["start"] = false;
+			$data["len"] = 0;
 			$response = "已停止遊戲";
+		} else if (($user_id > 0 && preg_match("/^\/column( |$)/", $input)) || preg_match("/^\/column@oneAtwoB_bot( |$)/", $input)) {
+			$input = preg_replace("/ {2,}/", " ", $input);
+			$input = explode(" ", $input);
+			$column = $input[1];
+			if ($data["len"] == 0) {
+				$response = "在遊戲開始後才可設定欄位數";
+			} else if (!isset($column)) {
+				$response = "需要提供一個參數為欄位數量";
+			} else if (!preg_match("/^\d+$/", $column)) {
+				$response = "欄位數量無效";
+			} else {
+				$column = (int)$column;
+				if ($column <= 0) {
+					$response = "欄位數量無效";
+				} else {
+					$data["column"][$data["len"]] = $column;
+					$response = "已將".$data["len"]."個數字的遊戲的欄位數設為".$column;
+					if ($column > 10) {
+						$response = "\n提醒：欄位數量過大";
+					}
+				}
+			}
 		} else if ($data["start"]) {
-			$guess = $text;
+			$guess = $input;
 			$guess = strtr($guess, "qwertyuiop", "1234567890");
 			$guesslen = strlen($guess);
 			$guessarr = str_split($guess);
+			$text = generateresult($data["guess"], $data["result"], $data["column"][$guesslen]);
 			if (!preg_match("/^\d{1,10}$/", $guess)) {
 				if ($user_id > 0) {
-					$response = "答案不符合格式，必須是1~10個不重複數字\n".$data["text"];
+					$response = "答案不符合格式，必須是1~10個不重複數字\n".$text;
+					$delmsg = true;
 				}
 			} else if(!checkdiff($guessarr, $guesslen)) {
 				if ($user_id > 0) {
-					$response = "數字不可重複！\n".$data["text"];
+					$response = "數字不可重複！\n".$text;
+					$delmsg = true;
 				}
 			} else if($data["count"]!=0 && $data["len"]!=$guesslen) {
 				if ($user_id > 0) {
-					$response = "答案不符合目前規則，必須是".$data["len"]."個數字\n".$data["text"];
+					$response = "答案不符合目前規則，必須是".$data["len"]."個數字\n".$text;
+					$delmsg = true;
 				}
 			} else if(in_array($guess, $data["guess"])) {
-				$response = "這個答案你猜過了！\n".$data["text"];
+				$response = $guess."已經猜過了！\n".$text;
+				$delmsg = true;
 			} else {
 				$response="";
 				if ($data["count"]==0) {
-					$data=array(
-						"count"=> 0,
-						"guess"=> array(),
-						"text"=> "",
-						"time"=>time(),
-						"ans"=>randomans($guesslen),
-						"len"=>$guesslen,
-						"start"=>true
-					);
+					$data["guess"] = [];
+					$data["result"] = [];
+					$data["time"] = time();
+					$data["ans"] = randomans($guesslen);
+					$data["len"] = $guesslen;
 					$response.="已開始 ".$data["len"]." 個數字的遊戲，欲重玩請輸入 ".($user_id>0?"/start":"/start@oneAtwoB_bot")."\n";
 				}
 				$data["count"]++;
-				$stat=checkans($data["ans"], $guessarr, $data["len"]);
-				$data["guess"][]=$guess;
-				if ($data["count"] % 3 == 1) {
-					$data["text"] .= "\n";
-				} else {
-					$data["text"] .= " | ";
-				}
-				$data["text"].=$guess." ".$stat[0]."A".$stat[1]."B";
+				$stat = checkans($data["ans"], $guessarr, $data["len"]);
+				$data["guess"] []= $guess;
+				$data["result"] []= $stat[0]."A".$stat[1]."B";
+				$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]]);
 				if ($stat[0]==$data["len"]) {
-					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中\n".$data["text"];
+					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中\n".$text;
+					$data["count"] = 0;
+					$data["guess"] = [];
+					$data["len"] = 0;
 					if ($user_id > 0) {
 						$response .= "\n\n已開始新遊戲！將根據輸入決定答案數字個數";
-						$data=array(
-							"count"=> 0,
-							"text"=> "",
-							"start"=>true
-						);
 					} else {
 						$response .= "\n\n繼續玩請輸入 /start@oneAtwoB_bot";
-						$data=array(
-							"count"=>0,
-							"text"=>"",
-							"start"=>false
-						);
+						$data["start"] = false;
 					}
 				} else {
-					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次\n".$data["text"];
+					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次\n".$text;
+					$delmsg = true;
 				}
 			}
 		}
 		if ($response !== "") {
-			$commend = 'curl https://api.telegram.org/bot'.$cfg['token'].'/sendMessage -d "chat_id='.$user_id.'&text='.$response.'"';
-			system($commend);
+			$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendMessage?chat_id='.$user_id.'&text='.urlencode($response);
+			$res = file_get_contents($url);
+			if ($user_id < 0) {
+				$res = json_decode($res, true);
+				$message_id = $res["result"]["message_id"];
+				if ($delmsg) {
+					if ($data["message_id"] !== "") {
+						$url = 'https://api.telegram.org/bot'.$cfg['token'].'/deleteMessage?chat_id='.$user_id.'&message_id='.$data["message_id"];
+						$res = file_get_contents($url);
+					}
+					$data["message_id"] = $message_id;
+				} else {
+					$data["message_id"] = "";
+				}
+			}
 		}
 	}
 	file_put_contents("data/".$user_id.".json", json_encode($data));
