@@ -32,7 +32,7 @@ if ($method == 'POST') {
 				$delthis = true;
 				$delpre = true;
 			} else {
-				$response = "你猜了 ".$data["count"]." 次就放棄了，答案是".implode($data["ans"])."\n".$text."\n\n已開始新遊戲！將根據輸入決定答案數字個數";
+				$response = "你猜了 ".$data["count"]." 次就放棄了，答案是".implode($data["ans"])."\n".$text."\n已開始新遊戲！將根據輸入決定答案數字個數";
 				$delpre = true;
 			}
 			$data["count"] = 0;
@@ -80,24 +80,24 @@ if ($method == 'POST') {
 			$guessarr = str_split($guess);
 			if (!preg_match("/^\d{1,10}$/", $guess)) {
 				if ($user_id > 0) {
-					$response = "答案不符合格式，必須是1~10個不重複數字".$text;
+					$response = $text."\n答案不符合格式，必須是1~10個不重複數字";
 					$delpre = true;
 					$delthis = true;
 				}
 			} else if(!checkdiff($guessarr, $guesslen)) {
 				if ($user_id > 0) {
-					$response = "數字不可重複！".$text;
+					$response = $text."\n數字不可重複！";
 					$delpre = true;
 					$delthis = true;
 				}
 			} else if($data["count"]!=0 && $data["len"]!=$guesslen) {
 				if ($user_id > 0) {
-					$response = "答案不符合目前規則，必須是".$data["len"]."個數字".$text;
+					$response = $text."\n答案不符合目前規則，必須是".$data["len"]."個數字";
 					$delpre = true;
 					$delthis = true;
 				}
 			} else if(in_array($guess, $data["guess"])) {
-				$response = $guess."已經猜過了！".$text;
+				$response = $text."\n".$guess."已經猜過了！";
 				$delpre = true;
 				$delthis = true;
 			} else {
@@ -117,7 +117,7 @@ if ($method == 'POST') {
 				$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
 				$text .= "\n剛剛猜測：".$guess." ".($stat[0]==$data["len"]?"BINGO!":$stat[0]."A".$stat[1]."B");
 				if ($stat[0]==$data["len"]) {
-					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中".$text;
+					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中\n".$text;
 					$data["count"] = 0;
 					$data["guess"] = [];
 					$data["len"] = 0;
@@ -129,7 +129,7 @@ if ($method == 'POST') {
 						$delpre = true;
 					}
 				} else {
-					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次".$text;
+					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次\n".$text;
 					$delpre = true;
 					$delthis = true;
 				}

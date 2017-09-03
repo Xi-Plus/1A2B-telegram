@@ -48,7 +48,9 @@ function generateresult($guess, $result, $column, $sort) {
 	$count = 0;
 	foreach ($list as $key => $value) {
 		if ($count % $column == 0) {
-			$text .= "\n";
+			if ($count) {
+				$text .= "\n";
+			}
 		} else {
 			$text .= " | ";
 		}
