@@ -60,7 +60,7 @@ if ($method == 'POST') {
 					$response = "欄位數量無效";
 				} else {
 					$data["column"][$data["len"]] = $column;
-					$response = "已將".$data["len"]."個數字的遊戲的欄位數設為".$column;
+					$response = "已將".$data["len"]."個數字的遊戲的欄位數設為".$column."\n".$text;
 					if ($column > 10) {
 						$response = "\n提醒：欄位數量過大";
 					}
