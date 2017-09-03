@@ -8,7 +8,7 @@ if ($method == 'POST') {
 	require(__DIR__."/function/1a2b.php");
 	require(__DIR__."/function/time.php");
 	$user_id = $input['message']['chat']['id'];
-	$data = @file_get_contents("data/".$user_id.".json");
+	$data = @file_get_contents(__DIR__."/data/".$user_id.".json");
 	if (!$data) {
 		$data=array(
 			"count"=>0,
@@ -25,7 +25,7 @@ if ($method == 'POST') {
 		$input = $input['message']['text'];
 		$delthis = false;
 		$delpre = false;
-		$text = generateresult($data["guess"], $data["result"], $data["column"][$guesslen], $data["sort"]);
+		$text = generateresult($data["guess"], $data["result"], $data["column"][strlen($data["len"])], $data["sort"]);
 		if (($user_id > 0 && $input === "/start") || $input == '/start@oneAtwoB_bot') {
 			if ($data["count"]==0) {
 				$response = "已開始新遊戲！將根據輸入決定答案數字個數";
