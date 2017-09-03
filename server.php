@@ -25,7 +25,7 @@ if ($method == 'POST') {
 		$input = $input['message']['text'];
 		$delthis = false;
 		$delpre = false;
-		$text = generateresult($data["guess"], $data["result"], $data["column"][strlen($data["len"])], $data["sort"]);
+		$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
 		if (($user_id > 0 && $input === "/start") || $input == '/start@oneAtwoB_bot') {
 			if ($data["count"]==0) {
 				$response = "已開始新遊戲！將根據輸入決定答案數字個數";
@@ -36,11 +36,11 @@ if ($method == 'POST') {
 				$delpre = true;
 			}
 			$data["count"] = 0;
-			$data["text"] = [];
+			$data["guess"] = [];
 			$data["start"] = true;
 		} else if ($user_id < 0 && $input == '/stop@oneAtwoB_bot') {
 			$data["count"] = 0;
-			$data["text"] = [];
+			$data["guess"] = [];
 			$data["start"] = false;
 			$data["len"] = 0;
 			$response = "已停止遊戲";
@@ -122,9 +122,9 @@ if ($method == 'POST') {
 					$data["guess"] = [];
 					$data["len"] = 0;
 					if ($user_id > 0) {
-						$response .= "\n\n已開始新遊戲！將根據輸入決定答案數字個數";
+						$response .= "\n已開始新遊戲！將根據輸入決定答案數字個數";
 					} else {
-						$response .= "\n\n繼續玩請輸入 /start@oneAtwoB_bot";
+						$response .= "\n繼續玩請輸入 /start@oneAtwoB_bot";
 						$data["start"] = false;
 						$delpre = true;
 					}
