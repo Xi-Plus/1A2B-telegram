@@ -117,6 +117,7 @@ if ($method == 'POST') {
 				$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
 				$text .= "\n剛剛猜測：".$guess." ".($stat[0]==$data["len"]?"BINGO!":$stat[0]."A".$stat[1]."B");
 				if ($stat[0]==$data["len"]) {
+					$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], false)."\n剛剛猜測：".$guess." BINGO!";
 					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中\n".$text;
 					$data["count"] = 0;
 					$data["guess"] = [];
