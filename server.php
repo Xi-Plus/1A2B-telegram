@@ -15,6 +15,7 @@ if ($method == 'POST') {
 			"text"=>[],
 			"start"=>($user_id > 0),
 			"column"=>$cfg['defalut_column'],
+			"sort"=>false,
 			"message_id"=>""
 		);
 	} else {
@@ -22,12 +23,17 @@ if ($method == 'POST') {
 	}
 	if (isset($input['message']['text'])) {
 		$input = $input['message']['text'];
-		$delmsg = false;
+		$delthis = false;
+		$delpre = false;
+		$text = generateresult($data["guess"], $data["result"], $data["column"][$guesslen], $data["sort"]);
 		if (($user_id > 0 && $input === "/start") || $input == '/start@oneAtwoB_bot') {
 			if ($data["count"]==0) {
 				$response = "已開始新遊戲！將根據輸入決定答案數字個數";
+				$delthis = true;
+				$delpre = true;
 			} else {
-				$response = "你猜了 ".$data["count"]." 次就放棄了，答案是".implode($data["ans"])."\n".$data["text"]."\n\n已開始新遊戲！將根據輸入決定答案數字個數";
+				$response = "你猜了 ".$data["count"]." 次就放棄了，答案是".implode($data["ans"])."\n".$text."\n\n已開始新遊戲！將根據輸入決定答案數字個數";
+				$delpre = true;
 			}
 			$data["count"] = 0;
 			$data["text"] = [];
@@ -60,30 +66,40 @@ if ($method == 'POST') {
 					}
 				}
 			}
+		} else if (($user_id > 0 && $input === "/sort") || $input == '/sort@oneAtwoB_bot') {
+			$data["sort"] = !$data["sort"];
+			if ($data["sort"]) {
+				$response = "已開啟結果排序";
+			} else {
+				$response = "已關閉結果排序";
+			}
 		} else if ($data["start"]) {
 			$guess = $input;
 			$guess = strtr($guess, "qwertyuiop", "1234567890");
 			$guesslen = strlen($guess);
 			$guessarr = str_split($guess);
-			$text = generateresult($data["guess"], $data["result"], $data["column"][$guesslen]);
 			if (!preg_match("/^\d{1,10}$/", $guess)) {
 				if ($user_id > 0) {
-					$response = "答案不符合格式，必須是1~10個不重複數字\n".$text;
-					$delmsg = true;
+					$response = "答案不符合格式，必須是1~10個不重複數字".$text;
+					$delpre = true;
+					$delthis = true;
 				}
 			} else if(!checkdiff($guessarr, $guesslen)) {
 				if ($user_id > 0) {
-					$response = "數字不可重複！\n".$text;
-					$delmsg = true;
+					$response = "數字不可重複！".$text;
+					$delpre = true;
+					$delthis = true;
 				}
 			} else if($data["count"]!=0 && $data["len"]!=$guesslen) {
 				if ($user_id > 0) {
-					$response = "答案不符合目前規則，必須是".$data["len"]."個數字\n".$text;
-					$delmsg = true;
+					$response = "答案不符合目前規則，必須是".$data["len"]."個數字".$text;
+					$delpre = true;
+					$delthis = true;
 				}
 			} else if(in_array($guess, $data["guess"])) {
-				$response = $guess."已經猜過了！\n".$text;
-				$delmsg = true;
+				$response = $guess."已經猜過了！".$text;
+				$delpre = true;
+				$delthis = true;
 			} else {
 				$response="";
 				if ($data["count"]==0) {
@@ -97,10 +113,11 @@ if ($method == 'POST') {
 				$data["count"]++;
 				$stat = checkans($data["ans"], $guessarr, $data["len"]);
 				$data["guess"] []= $guess;
-				$data["result"] []= $stat[0]."A".$stat[1]."B";
-				$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]]);
+				$data["result"] []= $stat;
+				$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
+				$text .= "\n剛剛猜測：".$guess." ".($stat[0]==$data["len"]?"BINGO!":$stat[0]."A".$stat[1]."B");
 				if ($stat[0]==$data["len"]) {
-					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中\n".$text;
+					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中".$text;
 					$data["count"] = 0;
 					$data["guess"] = [];
 					$data["len"] = 0;
@@ -109,30 +126,33 @@ if ($method == 'POST') {
 					} else {
 						$response .= "\n\n繼續玩請輸入 /start@oneAtwoB_bot";
 						$data["start"] = false;
+						$delpre = true;
 					}
 				} else {
-					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次\n".$text;
-					$delmsg = true;
+					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次".$text;
+					$delpre = true;
+					$delthis = true;
 				}
 			}
 		}
 		if ($response !== "") {
 			$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendMessage?chat_id='.$user_id.'&text='.urlencode($response);
 			$res = file_get_contents($url);
+			// file_put_contents("data/".$user_id."_postlog1.txt", "del".$res);
 			if ($user_id < 0) {
 				$res = json_decode($res, true);
 				$message_id = $res["result"]["message_id"];
-				if ($delmsg) {
-					if ($data["message_id"] !== "") {
-						$url = 'https://api.telegram.org/bot'.$cfg['token'].'/deleteMessage?chat_id='.$user_id.'&message_id='.$data["message_id"];
-						$res = file_get_contents($url);
-					}
-					$data["message_id"] = $message_id;
-				} else {
+				if ($delpre && $data["message_id"] !== "") {
+					$url = 'https://api.telegram.org/bot'.$cfg['token'].'/deleteMessage?chat_id='.$user_id.'&message_id='.$data["message_id"];
+					$res = file_get_contents($url);
+					// file_put_contents("data/".$user_id."_postlog2.txt", "del".$data["message_id"].$res);
 					$data["message_id"] = "";
+				}
+				if ($delthis) {
+					$data["message_id"] = $message_id;
 				}
 			}
 		}
+		file_put_contents(__DIR__."/data/".$user_id.".json", json_encode($data));
 	}
-	file_put_contents("data/".$user_id.".json", json_encode($data));
 }

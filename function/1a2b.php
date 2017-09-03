@@ -27,15 +27,38 @@ function checkans($ans, $gue, $len) {
 	}
 	return array($A,$B);
 }
-function generateresult($guess, $result, $column) {
-	$text = "";
+function cmp($a, $b) {
+	if ($a[0] == $b[0]) {
+		if ($a[1] == $b[1]) {
+			return 0;
+		}
+		return ($a[1] < $b[1]) ? -1 : 1;
+	}
+	return ($a[0] < $b[0]) ? -1 : 1;
+}
+function generateresult($guess, $result, $column, $sort) {
+	$list = [];
 	foreach ($guess as $key => $value) {
-		if ($key % $column == 0) {
+		$list[$guess[$key]] = $result[$key];
+	}
+	if ($sort) {
+		uasort($list, "cmp");
+	}
+	$text = "";
+	$count = 0;
+	foreach ($list as $key => $value) {
+		if ($count % $column == 0) {
 			$text .= "\n";
 		} else {
 			$text .= " | ";
 		}
-		$text .= $guess[$key]." ".$result[$key];
+		$text .= $key." ";
+		if ($value[0] == strlen($key)) {
+			$text .= "BINGO!";
+		} else {
+			$text .= $value[0]."A".$value[1]."B";
+		}
+		$count++;
 	}
 	return $text;
 }
