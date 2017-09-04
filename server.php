@@ -8,6 +8,9 @@ if ($method == 'POST') {
 	require(__DIR__."/function/1a2b.php");
 	require(__DIR__."/function/time.php");
 	$user_id = $input['message']['chat']['id'];
+	if ($cfg['log']) {
+		file_put_contents(__DIR__."/data/".$user_id."_log.txt", $inputJSON);
+	}
 	$data = @file_get_contents(__DIR__."/data/".$user_id.".json");
 	if (!$data) {
 		$data=array(

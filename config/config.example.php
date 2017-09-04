@@ -13,3 +13,4 @@ $cfg['defalut_column'] = [
 	9 => 2,
 	10 => 1
 ];
+$cfg['log'] = false;
