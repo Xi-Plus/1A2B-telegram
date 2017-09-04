@@ -22,11 +22,11 @@ if ($method == 'POST') {
 		$data = json_decode($data, true);
 	}
 	if (isset($input['message']['text'])) {
-		$input = $input['message']['text'];
+		$guess = $input['message']['text'];
 		$delthis = false;
 		$delpre = false;
 		$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
-		if (($user_id > 0 && $input === "/start") || $input == '/start@oneAtwoB_bot') {
+		if (($user_id > 0 && $guess === "/start") || $guess == '/start@oneAtwoB_bot') {
 			if ($data["count"]==0) {
 				$response = "已開始新遊戲！將根據輸入決定答案數字個數";
 				$delthis = true;
@@ -38,16 +38,16 @@ if ($method == 'POST') {
 			$data["count"] = 0;
 			$data["guess"] = [];
 			$data["start"] = true;
-		} else if ($user_id < 0 && $input == '/stop@oneAtwoB_bot') {
+		} else if ($user_id < 0 && $guess == '/stop@oneAtwoB_bot') {
 			$data["count"] = 0;
 			$data["guess"] = [];
 			$data["start"] = false;
 			$data["len"] = 0;
 			$response = "已停止遊戲";
-		} else if (($user_id > 0 && preg_match("/^\/column( |$)/", $input)) || preg_match("/^\/column@oneAtwoB_bot( |$)/", $input)) {
-			$input = preg_replace("/ {2,}/", " ", $input);
-			$input = explode(" ", $input);
-			$column = $input[1];
+		} else if (($user_id > 0 && preg_match("/^\/column( |$)/", $guess)) || preg_match("/^\/column@oneAtwoB_bot( |$)/", $guess)) {
+			$guess = preg_replace("/ {2,}/", " ", $guess);
+			$guess = explode(" ", $guess);
+			$column = $guess[1];
 			if ($data["len"] == 0) {
 				$response = "在遊戲開始後才可設定欄位數";
 			} else if (!isset($column)) {
@@ -67,7 +67,7 @@ if ($method == 'POST') {
 					}
 				}
 			}
-		} else if (($user_id > 0 && $input === "/sort") || $input == '/sort@oneAtwoB_bot') {
+		} else if (($user_id > 0 && $guess === "/sort") || $guess == '/sort@oneAtwoB_bot') {
 			$data["sort"] = !$data["sort"];
 			if ($data["sort"]) {
 				$response = "已開啟結果排序";
@@ -75,7 +75,6 @@ if ($method == 'POST') {
 				$response = "已關閉結果排序";
 			}
 		} else if ($data["start"]) {
-			$guess = $input;
 			$guess = strtr($guess, "qwertyuiop", "1234567890");
 			$guesslen = strlen($guess);
 			$guessarr = str_split($guess);
@@ -116,9 +115,9 @@ if ($method == 'POST') {
 				$data["guess"] []= $guess;
 				$data["result"] []= $stat;
 				$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
-				$text .= "\n剛剛猜測：".$guess." ".($stat[0]==$data["len"]?"BINGO!":$stat[0]."A".$stat[1]."B");
+				$text .= "\n".($user_id<0 ? $input["message"]["from"]["first_name"]." ".$input["message"]["from"]["last_name"] : "")."猜測：".$guess." ".($stat[0]==$data["len"]?"BINGO!":$stat[0]."A".$stat[1]."B");
 				if ($stat[0]==$data["len"]) {
-					$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], false)."\n剛剛猜測：".$guess." BINGO!";
+					$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], false)."\n".($user_id<0 ? $input["message"]["from"]["first_name"]." ".$input["message"]["from"]["last_name"] : "")."猜測：".$guess." BINGO!";
 					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中\n".$text;
 					$data["count"] = 0;
 					$data["guess"] = [];
