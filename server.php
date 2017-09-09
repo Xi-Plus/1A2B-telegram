@@ -29,24 +29,34 @@ if ($method == 'POST') {
 		$delthis = false;
 		$delpre = false;
 		$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
-		if (($user_id > 0 && $guess === "/start") || $guess == '/start@oneAtwoB_bot') {
-			if ($data["count"]==0) {
+		if (($user_id > 0 && $guess === "/start") || $guess === '/start@oneAtwoB_bot') {
+			if ($data["count"] == 0) {
 				$response = "已開始新遊戲！將根據輸入決定答案數字個數";
-				$delthis = true;
-				$delpre = true;
+				$data["count"] = 0;
+				$data["guess"] = [];
 			} else {
-				$response = "你猜了 ".$data["count"]." 次就放棄了，答案是".implode($data["ans"])."\n".$text."\n已開始新遊戲！將根據輸入決定答案數字個數";
-				$delpre = true;
+				if ($data["start"]) {
+					$response = "遊戲已經在進行，欲重玩請輸入 ".($user_id>0?"/restart":"/restart@oneAtwoB_bot")."\n".$text;
+				} else {
+					$response = "遊戲繼續\n".$text;
+				}
 			}
+			$delthis = true;
+			$delpre = true;
+			$data["start"] = true;
+		} else if (($user_id > 0 && $guess === "/restart") || $guess == '/restart@oneAtwoB_bot') {
+			$response = "";
+			if ($data["count"]) {
+				$response = "你猜了 ".$data["count"]." 次就放棄了，答案是".implode($data["ans"])."\n".$text."\n";
+			}
+			$response .= "已開始新遊戲！將根據輸入決定答案數字個數";
+			$delpre = true;
 			$data["count"] = 0;
 			$data["guess"] = [];
 			$data["start"] = true;
 		} else if ($user_id < 0 && $guess == '/stop@oneAtwoB_bot') {
-			$data["count"] = 0;
-			$data["guess"] = [];
 			$data["start"] = false;
-			$data["len"] = 0;
-			$response = "已停止遊戲";
+			$response = "已暫停遊戲\n使用 /start@oneAtwoB_bot 繼續遊戲";
 		} else if (($user_id > 0 && preg_match("/^\/column( |$)/", $guess)) || preg_match("/^\/column@oneAtwoB_bot( |$)/", $guess)) {
 			$guess = preg_replace("/ {2,}/", " ", $guess);
 			$guess = explode(" ", $guess);
@@ -111,7 +121,7 @@ if ($method == 'POST') {
 					$data["time"] = time();
 					$data["ans"] = randomans($guesslen);
 					$data["len"] = $guesslen;
-					$response.="已開始 ".$data["len"]." 個數字的遊戲，欲重玩請輸入 ".($user_id>0?"/start":"/start@oneAtwoB_bot")."\n";
+					$response.="已開始 ".$data["len"]." 個數字的遊戲，欲重玩請輸入 ".($user_id>0?"/restart":"/restart@oneAtwoB_bot")."\n";
 				}
 				$data["count"]++;
 				$stat = checkans($data["ans"], $guessarr, $data["len"]);
