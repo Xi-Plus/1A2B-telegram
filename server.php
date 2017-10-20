@@ -36,7 +36,7 @@ if ($method == 'POST') {
 				$data["guess"] = [];
 			} else {
 				if ($data["start"]) {
-					$response = "遊戲已經在進行，欲重玩請輸入 ".($user_id>0?"/restart":"/restart@oneAtwoB_bot")."\n".$text;
+					$response = "遊戲已經在進行，欲重玩請輸入 /restart\n".$text;
 				} else {
 					$response = "遊戲繼續\n".$text;
 				}
@@ -56,7 +56,7 @@ if ($method == 'POST') {
 			$data["start"] = true;
 		} else if ($user_id < 0 && $guess == '/stop@oneAtwoB_bot') {
 			$data["start"] = false;
-			$response = "已暫停遊戲\n使用 /start@oneAtwoB_bot 繼續遊戲";
+			$response = "已暫停遊戲\n使用 /start 繼續遊戲";
 		} else if (($user_id > 0 && preg_match("/^\/column( |$)/", $guess)) || preg_match("/^\/column@oneAtwoB_bot( |$)/", $guess)) {
 			$guess = preg_replace("/ {2,}/", " ", $guess);
 			$guess = explode(" ", $guess);
@@ -121,7 +121,7 @@ if ($method == 'POST') {
 					$data["time"] = time();
 					$data["ans"] = randomans($guesslen);
 					$data["len"] = $guesslen;
-					$response.="已開始 ".$data["len"]." 個數字的遊戲，欲重玩請輸入 ".($user_id>0?"/restart":"/restart@oneAtwoB_bot")."\n";
+					$response.="已開始 ".$data["len"]." 個數字的遊戲，欲重玩請輸入 /restart\n";
 				}
 				$data["count"]++;
 				$stat = checkans($data["ans"], $guessarr, $data["len"]);
@@ -138,7 +138,7 @@ if ($method == 'POST') {
 					if ($user_id > 0) {
 						$response .= "\n已開始新遊戲！將根據輸入決定答案數字個數";
 					} else {
-						$response .= "\n繼續玩請輸入 /start@oneAtwoB_bot";
+						$response .= "\n繼續玩請輸入 /start";
 						$data["start"] = false;
 						$delpre = true;
 					}
