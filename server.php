@@ -142,6 +142,11 @@ if ($method == 'POST') {
 						$data["start"] = false;
 						$delpre = true;
 					}
+					$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendMessage?chat_id='.$user_id.'&text='.urlencode($response);
+					$res = file_get_contents($url);
+					$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendSticker?chat_id='.$user_id.'&sticker=CAADBQADWhIAAnE13AJfBOLzfTeyawI';
+					$res = file_get_contents($url);
+					$response = "";
 				} else {
 					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次\n".$text;
 					$delpre = true;
