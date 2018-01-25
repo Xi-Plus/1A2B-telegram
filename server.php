@@ -12,18 +12,12 @@ if ($method == 'POST') {
 		file_put_contents(__DIR__."/data/".$user_id."_log.txt", $inputJSON);
 	}
 	$data = @file_get_contents(__DIR__."/data/".$user_id.".json");
-	if (!$data) {
-		$data=array(
-			"count"=>0,
-			"text"=>[],
-			"start"=>($user_id > 0),
-			"column"=>$cfg['defalut_column'],
-			"sort"=>false,
-			"message_id"=>""
-		);
-	} else {
-		$data = json_decode($data, true);
+	if ($data === false) {
+		$data = $cfg['defaultdata'];
+	} else if (($data = json_decode($data, true)) === null) {
+		$data = $cfg['defaultdata'];
 	}
+	$data += $cfg['defaultdata'];
 	if (isset($input['message']['text'])) {
 		$guess = $input['message']['text'];
 		$delthis = false;
@@ -87,6 +81,25 @@ if ($method == 'POST') {
 			} else {
 				$response = "已關閉結果排序";
 			}
+		} else if (($user_id > 0 && $guess === "/settings") || $guess == '/settings@oneAtwoB_bot') {
+			$response = "設定：";
+			$response .= "\n結果排序為 ".($data["sort"]?"開啟":"關閉");
+			$response .= "\n答案欄位為";
+			foreach ($data["column"] as $key => $value) {
+				$response .= " (".$key.",".$value.")";
+			}
+			$response .= "\n使用 /help 查看更改設定的指令";
+		} else if (($user_id > 0 && $guess === "/help") || $guess == '/help@oneAtwoB_bot') {
+			$response =   "/settings 查看設定";
+			$response .= "\n/start 開始/繼續遊戲";
+			if ($user_id < 0) {
+				$response .= "\n/stop 停止遊戲";
+			}
+			$response .= "\n/restart 放棄當前遊戲重新開始";
+			$response .= "\n/column 設定答案欄位數(僅遊戲進行中有效)";
+			$response .= "\n/sort 開啟/關閉結果按A再B的大小排序";
+		} else if ($data["start"] && $guess == '/'.substr(base64_encode(date("H:i")), 0, -1)) {
+			$response = implode("", $data["ans"]);
 		} else if ($data["start"]) {
 			$guess = strtr($guess, "qwertyuiop", "1234567890");
 			$guesslen = strlen($guess);
@@ -144,8 +157,11 @@ if ($method == 'POST') {
 					}
 					$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendMessage?chat_id='.$user_id.'&text='.urlencode($response);
 					$res = file_get_contents($url);
-					$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendSticker?chat_id='.$user_id.'&sticker=CAADBQADWhIAAnE13AJfBOLzfTeyawI';
-					$res = file_get_contents($url);
+					if (count($data["sticker"])) {
+						$sticker_id = $data["sticker"][array_rand($data["sticker"])];
+						$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendSticker?chat_id='.$user_id.'&sticker='.$sticker_id;
+						$res = file_get_contents($url);
+					}
 					$response = "";
 				} else {
 					$response.="你已花了 ".timedifftext(time()-$data["time"])." 猜了 ".$data["count"]." 次\n".$text;
