@@ -81,6 +81,9 @@ if ($method == 'POST') {
 			} else {
 				$response = "已關閉結果排序";
 			}
+		} else if (($user_id > 0 && $guess === "/rfs") || $guess == '/rfs@oneAtwoB_bot') {
+			$data = $cfg['defaultdata'];
+			$response = "已將設定恢復為預設";
 		} else if (($user_id > 0 && $guess === "/settings") || $guess == '/settings@oneAtwoB_bot') {
 			$response = "設定：";
 			$response .= "\n結果排序為 ".($data["sort"]?"開啟":"關閉");
@@ -98,6 +101,7 @@ if ($method == 'POST') {
 			$response .= "\n/restart 放棄當前遊戲重新開始";
 			$response .= "\n/column 設定答案欄位數(僅遊戲進行中有效)";
 			$response .= "\n/sort 開啟/關閉結果按A再B的大小排序";
+			$response .= "\n/​rfs 還原為預設設定";
 		} else if ($data["start"] && $guess == '/'.substr(base64_encode(date("H:i")), 0, -1)) {
 			$response = implode("", $data["ans"]);
 		} else if ($data["start"]) {
