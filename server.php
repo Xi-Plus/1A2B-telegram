@@ -5,6 +5,9 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method == 'POST') {
 	$inputJSON = file_get_contents('php://input');
 	$input = json_decode($inputJSON, true);
+	if ($input['message']['date'] < time()-600) {
+		exit();
+	}
 	require(__DIR__."/function/1a2b.php");
 	require(__DIR__."/function/time.php");
 	$user_id = $input['message']['chat']['id'];
