@@ -25,7 +25,7 @@ if ($method == 'POST') {
 		$guess = $input['message']['text'];
 		$delthis = false;
 		$delpre = false;
-		$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
+		$text = generateresult($data, $data["sort"]);
 		if (($user_id > 0 && $guess === "/start") || $guess === '/start@oneAtwoB_bot') {
 			if ($data["count"] == 0) {
 				$response = "已開始新遊戲！將根據輸入決定答案數字個數";
@@ -70,7 +70,7 @@ if ($method == 'POST') {
 					$response = "欄位數量無效";
 				} else {
 					$data["column"][$data["len"]] = $column;
-					$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
+					$text = generateresult($data, $data["sort"]);
 					$response = "已將".$data["len"]."個數字的遊戲的欄位數設為".$column."\n".$text;
 					if ($column > 10) {
 						$response = "\n提醒：欄位數量過大";
@@ -147,10 +147,10 @@ if ($method == 'POST') {
 				$stat = checkans($data["ans"], $guessarr, $data["len"]);
 				$data["guess"] []= $guess;
 				$data["result"] []= $stat;
-				$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], $data["sort"]);
+				$text = generateresult($data, $data["sort"]);
 				$text .= "\n".($user_id<0 ? $input["message"]["from"]["first_name"]." ".$input["message"]["from"]["last_name"] : "")."猜測：".$guess." ".($stat[0]==$data["len"]?"BINGO!":$stat[0]."A".$stat[1]."B");
 				if ($stat[0]==$data["len"]) {
-					$text = generateresult($data["guess"], $data["result"], $data["column"][$data["len"]], false)."\n".($user_id<0 ? $input["message"]["from"]["first_name"]." ".$input["message"]["from"]["last_name"] : "")."猜測：".$guess." BINGO!";
+					$text = generateresult($data, false)."\n".($user_id<0 ? $input["message"]["from"]["first_name"]." ".$input["message"]["from"]["last_name"] : "")."猜測：".$guess." BINGO!";
 					$response.="你花了 ".timedifftext(time()-$data["time"])." 在 ".$data["count"]." 次猜中\n".$text;
 					$data["count"] = 0;
 					$data["guess"] = [];

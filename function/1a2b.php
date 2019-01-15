@@ -36,7 +36,14 @@ function cmp($a, $b) {
 	}
 	return ($a[0] < $b[0]) ? -1 : 1;
 }
-function generateresult($guess, $result, $column, $sort) {
+function generateresult($data, $sort) {
+	if (!isset($data["guess"]) || count($data["guess"]) == 0) {
+		return "";
+	}
+	$guess = $data["guess"];
+	$result = $data["result"];
+	$column = $data["column"][$data["len"]];
+
 	$list = [];
 	foreach ($guess as $key => $value) {
 		$list[$guess[$key]] = $result[$key];
