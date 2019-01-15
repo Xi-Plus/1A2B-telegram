@@ -177,7 +177,7 @@ if ($method == 'POST') {
 				}
 			}
 		}
-		if ($response !== "") {
+		if (isset($response) && $response !== "") {
 			$url = 'https://api.telegram.org/bot'.$cfg['token'].'/sendMessage?chat_id='.$user_id.'&text='.urlencode($response);
 			$res = file_get_contents($url);
 			// file_put_contents("data/".$user_id."_postlog1.txt", "del".$res);
