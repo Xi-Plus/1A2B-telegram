@@ -186,7 +186,7 @@ if ($method == 'POST') {
 				$message_id = $res["result"]["message_id"];
 				if ($delpre && $data["message_id"] !== "") {
 					$url = 'https://api.telegram.org/bot'.$cfg['token'].'/deleteMessage?chat_id='.$user_id.'&message_id='.$data["message_id"];
-					$res = file_get_contents($url);
+					$res = @file_get_contents($url);
 					// file_put_contents("data/".$user_id."_postlog2.txt", "del".$data["message_id"].$res);
 					$data["message_id"] = "";
 				}
