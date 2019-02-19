@@ -1,6 +1,7 @@
 <?php
 $cfg['token'] = 'token';
 $cfg['webhook'] = 'webhook';
+$cfg["max_connections"] = 40;
 $cfg['defaultdata'] = [
 	'count' => 0,
 	'text' => [],
