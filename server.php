@@ -160,7 +160,14 @@ if ($method == 'POST') {
 				}
 				$text .= "\n" . $username . "猜測：" . $guess . " " . ($stat[0] == $data["len"] ? "BINGO!" : $stat[0] . "A" . $stat[1] . "B");
 				if ($stat[0] == $data["len"]) {
-					$text = generateresult($data, false) . "\n" . ($user_id < 0 ? $input["message"]["from"]["first_name"] . " " . $input["message"]["from"]["last_name"] : "") . "猜測：" . $guess . " BINGO!";
+					$name = "";
+					if ($user_id < 0) {
+						$name = $input["message"]["from"]["first_name"];
+						if (isset($input["message"]["from"]["last_name"])) {
+							$name .= " " . $input["message"]["from"]["last_name"];
+						}
+					}
+					$text = generateresult($data, false) . "\n" . $name . "猜測：" . $guess . " BINGO!";
 					$response .= "你花了 " . timedifftext(time() - $data["time"]) . " 在 " . $data["count"] . " 次猜中\n" . $text;
 					$data["count"] = 0;
 					$data["guess"] = [];
